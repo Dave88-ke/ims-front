@@ -3,6 +3,7 @@ import Router from 'vue-router'
 import Login from '@/components/Login'
 import Portal from '@/components/Portal'
 import GoodsManage from '@/components/GoodsManage'
+import StockManage from '@/components/StockManage'
 
 Vue.use(Router)
 
@@ -20,6 +21,12 @@ const router = new Router({
             path: '/goods-manage',
             name: 'GoodsManage',
             component: GoodsManage,
+            meta: { requiresAuth: true }
+        },
+        {
+            path: '/stock-manage',
+            name: 'StockManage',
+            component: StockManage,
             meta: { requiresAuth: true }
         }
     ]

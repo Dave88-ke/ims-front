@@ -60,10 +60,10 @@
         :default-sort="{prop: 'createTime', order: 'descending'}"
     >
       <el-table-column type="selection" width="55"></el-table-column>
-      <el-table-column prop="goodsId" label="商品 ID" width="100"></el-table-column>
-      <el-table-column prop="goodsName" label="商品名称" min-width="150"></el-table-column>
+      <el-table-column prop="goodsName" label="商品名称" width="150"></el-table-column>
       <el-table-column prop="goodsCategory" label="商品类别" width="120"></el-table-column>
-      <el-table-column prop="factory" label="生产厂家" min-width="150"></el-table-column>
+      <el-table-column prop="unit" label="单位" width="70"></el-table-column>
+      <el-table-column prop="factory" label="生产厂家" width="150"></el-table-column>
       <el-table-column prop="createUser" label="创建人" width="100"></el-table-column>
       <el-table-column prop="createTime" label="创建时间" width="160">
         <template slot-scope="scope">
@@ -79,17 +79,18 @@
         width="90%"
         :fullscreen="isMobile"
         @close="resetAddForm()"
+        :close-on-click-modal="false"
     >
-      <div class="dialog-content" style="max-height: 500px; overflow-y: auto;">
+      <div class="dialog-content" style="max-height: 500px; overflow-y: auto;" v-loading="submitting" element-loading-text="正在提交中...">
         <div v-for="(item, index) in addGoodsList" :key="index" class="form-item">
-          <el-form :model="item" label-width="80px">
+          <el-form :model="item" label-width="100px">
             <el-row :gutter="10">
-              <el-col :xs="24" :sm="12" style="margin-bottom: 10px;">
+              <el-col :xs="24" :sm="12" :md="8" style="margin-bottom: 10px;">
                 <el-form-item label="商品名称：">
                   <el-input v-model="item.goodsName" placeholder="请输入商品名称"></el-input>
                 </el-form-item>
               </el-col>
-              <el-col :xs="24" :sm="12" style="margin-bottom: 10px;">
+              <el-col :xs="24" :sm="12" :md="8" style="margin-bottom: 10px;">
                 <el-form-item label="商品类别：">
                   <el-select
                       v-model="item.goodsCategory"
@@ -108,9 +109,42 @@
                   </el-select>
                 </el-form-item>
               </el-col>
-              <el-col :xs="24" style="margin-bottom: 10px;">
+              <el-col :xs="24" :md="8" style="margin-bottom: 10px;">
+                <el-form-item label="单位：">
+                  <el-select
+                      v-model="item.unit"
+                      placeholder="请选择单位"
+                      filterable
+                      allow-create
+                      style="width: 100%;"
+                  >
+                    <el-option label="件" value="件"></el-option>
+                    <el-option label="袋" value="件"></el-option>
+                    <el-option label="箱" value="箱"></el-option>
+                    <el-option label="包" value="包"></el-option>
+                    <el-option label="个" value="个"></el-option>       
+                  </el-select>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row :gutter="10">
+              <el-col :xs="24" :md="24" style="margin-bottom: 10px;">
                 <el-form-item label="生产厂家：">
-                  <el-input v-model="item.factory" placeholder="请输入生产厂家"></el-input>
+                  <el-select
+                      v-model="item.factory"
+                      placeholder="请选择/输入生产厂家"
+                      filterable
+                      allow-create
+                      default-first-option
+                      style="width: 100%;"
+                  >
+                    <el-option
+                        v-for="factory in factoryOptions"
+                        :key="factory.value"
+                        :label="factory.label"
+                        :value="factory.value"
+                    ></el-option>
+                  </el-select>
                 </el-form-item>
               </el-col>
             </el-row>
@@ -138,52 +172,54 @@ export default {
       selectedIds: [],
       showAddDialog: false,
       loading: false,
+      submitting: false, // 防止重复提交
       isMobile: false,
       searchParams: {
         goodsCategory: '',
         factory: ''
       },
       categoryOptions: [
-        { label: '大米', value: '大米' },
-        { label: '白面', value: '白面' },
-        { label: '色拉油', value: '色拉油' },
+        { label: '米', value: '米' },
+        { label: '面', value: '面' },
+        { label: '油', value: '油' },
         { label: '香油', value: '香油' },
         { label: '挂面', value: '挂面' },
-        { label: '玉米油', value: '玉米油' },
-        { label: '大豆油', value: '大豆油' },
-        { label: '花生油', value: '花生油' },
-        { label: '菜籽油', value: '菜籽油' },
-        { label: '调和油', value: '调和油' },
-        { label: '花椒油', value: '花椒油' },
-        { label: '芝麻酱', value: '芝麻酱' },
-        { label: '花生酱', value: '花生酱' },
         { label: '酱油', value: '酱油' },
         { label: '醋', value: '醋' },
         { label: '料酒', value: '料酒' },
         { label: '食盐', value: '食盐' },
         { label: '味精', value: '味精' },
-        { label: '鸡精', value: '鸡精' },
-        { label: '白糖', value: '白糖' },
-        { label: '红糖', value: '红糖' },
-        { label: '花椒', value: '花椒' },
-        { label: '大料', value: '大料' },
-        { label: '桂皮', value: '桂皮' },
-        { label: '香叶', value: '香叶' },
-        { label: '干辣椒', value: '干辣椒' },
-        { label: '胡椒', value: '胡椒' },
-        { label: '孜然', value: '孜然' },
-        { label: '豆瓣酱', value: '豆瓣酱' },
-        { label: '甜面酱', value: '甜面酱' },
-        { label: '黄豆酱', value: '黄豆酱' },
-        { label: '粉条', value: '粉条' },
-        { label: '粉丝', value: '粉丝' },
-        { label: '木耳', value: '木耳' },
-        { label: '腐竹', value: '腐竹' }
+        { label: '鸡精', value: '鸡精' }
+      ],
+      factoryOptions: [
+        { label: '中粮集团', value: '中粮集团' },
+        { label: '益海嘉里', value: '益海嘉里' },
+        { label: '福临门', value: '福临门' },
+        { label: '鲁花', value: '鲁花' },
+        { label: '海天', value: '海天' },
+        { label: '九三', value: '九三' },
+        { label: '李锦记', value: '李锦记' },
+        { label: '恒顺', value: '恒顺' },
+        { label: '加加', value: '加加' },
+        { label: '大连金石', value: '大连金石' },
+        { label: '太太乐', value: '太太乐' },
+        { label: '五得利', value: '五得利' },
+        { label: '金沙河', value: '金沙河' },
+        { label: '陈克明', value: '陈克明' },
+        { label: '北大荒', value: '北大荒' },
+        { label: '西王', value: '西王' },
+        { label: '长寿花', value: '长寿花' },
+        { label: '多力', value: '多力' },
+        { label: '厨邦', value: '厨邦' },
+        { label: '欣和', value: '欣和' },
+        { label: '千禾', value: '千禾' },
+        { label: '其他', value: '其他' }
       ],
       addGoodsList: [{
         goodsName: '',
-        goodsCategory: '',
-        factory: ''
+        goodsCategory: '油',
+        unit: '件',
+        factory: '益海嘉里'
       }],
       username: localStorage.getItem('ims_username') || 'admin'
     }
@@ -234,10 +270,15 @@ export default {
     },
 
     handleSelectionChange(val) {
-      this.selectedIds = val.map(item => item.goodsId);
+      // 保存选中行的商品名称列表
+      this.selectedIds = val.map(item => item.goodsName);
     },
 
     batchDeleteGoods() {
+      if (!this.selectedIds || this.selectedIds.length === 0) {
+        this.$message.warning('请先选择要删除的商品！');
+        return;
+      }
       this.$confirm('确定删除选中的' + this.selectedIds.length + '个商品？', '提示', { type: 'warning' })
           .then(() => {
             this.$axios.post('/goodsInfo/batchDelete', this.selectedIds)
@@ -262,7 +303,8 @@ export default {
       this.addGoodsList.push({
         goodsName: '',
         goodsCategory: '',
-        factory: ''
+        unit: '袋',
+        factory: '益海嘉里'
       });
     },
 
@@ -273,12 +315,19 @@ export default {
     resetAddForm() {
       this.addGoodsList = [{
         goodsName: '',
-        goodsCategory: '',
+        goodsCategory: '油',
+        unit: '件',
         factory: ''
       }];
     },
 
     submitBatchAdd() {
+      // 防止重复提交
+      if (this.submitting) {
+        this.$message.warning('正在提交中，请勿重复点击！');
+        return;
+      }
+
       const isValid = this.addGoodsList.every(item => {
         if (!item.goodsName) {
           this.$message.warning('商品名称不能为空！');
@@ -286,6 +335,10 @@ export default {
         }
         if (!item.goodsCategory) {
           this.$message.warning('商品类别不能为空！');
+          return false;
+        }
+        if (!item.unit) {
+          this.$message.warning('单位不能为空！');
           return false;
         }
         if (!item.factory) {
@@ -302,6 +355,9 @@ export default {
         goodsList: this.addGoodsList
       };
 
+      // 设置提交中状态
+      this.submitting = true;
+
       this.$axios.post('/goodsInfo/batchAdd', submitData)
           .then(res => {
             if (res.data.code === 200) {
@@ -315,6 +371,10 @@ export default {
           })
           .catch(err => {
             this.$message.error('新增异常：' + err.message);
+          })
+          .finally(() => {
+            // 释放提交锁
+            this.submitting = false;
           })
     },
 
@@ -397,5 +457,23 @@ export default {
   ::v-deep .el-table {
     font-size: 12px;
   }
+  /* 弹窗内的表单元素适配 */
+  ::v-deep .el-dialog .form-item {
+    margin-bottom: 8px;
+  }
+  ::v-deep .el-dialog .el-form-item__label {
+    font-size: 13px;
+    padding-right: 3px !important;
+    white-space: nowrap;
+  }
+  ::v-deep .el-dialog .el-input__inner,
+  ::v-deep .el-dialog .el-select .el-input__inner {
+    font-size: 13px;
+    height: 32px;
+    line-height: 32px;
+  }
+  ::v-deep .el-dialog .el-button {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
 }
-</style>

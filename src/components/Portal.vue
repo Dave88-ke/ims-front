@@ -46,6 +46,12 @@ export default {
           action: () => this.goToGoodsManage()
         },
         {
+          title: '库存管理',
+          description: '库存查询、入库、出库、盘点',
+          icon: 'el-icon-s-operation',
+          action: () => this.goToStockManage()
+        },
+        {
           title: '库房管理',
           description: '库房信息维护（待开发）',
           icon: 'el-icon-location',
@@ -66,6 +72,9 @@ export default {
   methods: {
     goToGoodsManage() {
       this.$router.push('/goods-manage')
+    },
+    goToStockManage() {
+      this.$router.push('/stock-manage')
     },
     handleLogout() {
       this.$confirm('确定退出登录吗？', '提示', { type: 'warning' })
